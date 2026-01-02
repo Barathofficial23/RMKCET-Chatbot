@@ -1,0 +1,46 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>RMKCET Chatbot</title>
+    <link rel="stylesheet" href="clgbot_styles.css">
+  </head>
+  <body>
+
+  <!-- Floating button -->
+  <button class="chatbot-button" id="openChatBtn">
+    <img src="chatbot-icon.gif" alt="Chatbot" style="border-radius: 50%;"/>
+  </button>
+
+  <!-- Chat container -->
+  <div class="chat-container" id="chatContainer">
+    <div class="chat-header">
+      <div class="bot-logo">
+        <img src="chatbot-icon.gif" alt="" width="40px" height="40px" style="border-radius: 50%;">
+      </div>
+      <div class="bot-name-online">
+        <div class="bot-name">RMKCET BOT</div>
+        <div class="bot-online">
+          <div class="online-blinker"></div>
+          <div class="online">Online</div>
+        </div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="defaultOptions">
+        <button id="departments" class="defaultInput">Departments in RMKCET</button>
+        <button id="materials" class="defaultInput">Digital Course Material</button>
+      </div>
+    </div>
+    <div class="chat-footer">
+      <input type="text" id="userInput" placeholder="Type a message..." />
+      <button id="send"><img width="25" height="25" src="chatbot-send.png" alt="send"/></button>
+    </div>
+  </div>
+
+  
+
+
+  </body>
+  </html>
