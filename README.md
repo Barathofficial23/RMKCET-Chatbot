@@ -1,72 +1,89 @@
-🎓 RMKCET Virtual Assistant
+# 🎓 RMKCET Virtual Assistant
 
-An AI-powered virtual assistant developed and deployed for R.M.K. College of Engineering and Technology (RMKCET) to assist students, parents, and visitors with academic and college-related queries.
+[![Status](https://img.shields.io/badge/Status-Live-brightgreen.svg)]()
+[![Tech](https://img.shields.io/badge/Tech-JavaScript%20%7C%20Gemini%20AI-blue.svg)]()
+[![Institution](https://img.shields.io/badge/Institution-RMKCET-red.svg)](https://rmkcet.ac.in)
 
-🚀 Overview
+An AI-powered virtual assistant designed specifically for **R.M.K. College of Engineering and Technology (RMKCET)**. This assistant streamlines access to academic resources, department details, and placement information through a seamless conversational interface.
 
-The RMKCET Virtual Assistant provides instant, accurate, and instruction-driven responses related to college information. It enhances accessibility to digital notes, department details, placements, Centres of Excellence, and other institutional resources through a conversational interface.
-The chatbot is designed to be lightweight, reliable, and fully frontend-based using modern web technologies.
 
-✨ Key Features
+## 🚀 Overview
 
-🤖 AI-powered conversational chatbot (Google Gemini)
-📚 Digital notes retrieval (unit-wise & subject-wise)
-🏫 Department, COE, and placement information
-🎯 Smart subject recognition (supports abbreviations like CN → Computer Networks)
-🧠 Context-aware conversations with chat memory
-🔄 Automatic API key rotation for reliability
-📄 Instruction-driven responses using external text files
-🌐 Deployed for real-world college usage at RMKCET
+The RMKCET Virtual Assistant is a lightweight, frontend-driven chatbot that leverages the power of **Google Gemini** to provide instant, instruction-based responses. It acts as a digital concierge for students, parents, and visitors.
 
-🛠️ Tech Stack
+## ✨ Key Features
 
-Frontend: HTML, CSS, JavaScript
-AI Model: Google Gemini API
-Architecture: Client-side (no backend)
-Configuration: JSON-based API key handling
-Data Sources: Text-based instruction & notes files
+* 🤖 **Gemini AI Integration:** Advanced natural language processing for human-like interaction.
+* 📚 **Digital Library:** Instant retrieval of unit-wise and subject-wise digital notes.
+* 🏫 **Institutional Insights:** Detailed info on Departments, Centres of Excellence (COE), and Placements.
+* 🎯 **Smart Recognition:** Supports academic shorthand (e.g., `CN` ➔ `Computer Networks`).
+* 🧠 **Chat Memory:** Context-aware conversations that remember previous interactions.
+* 🔄 **High Reliability:** Automatic API key rotation to ensure 24/7 uptime.
 
-📂 Project Structure
-├── index.html
-├── style.css
-├── clgbot.js
-├── instructions.txt
-├── notes.txt
-├── config.json   (API keys – not to be committed)
-└── assets/
+## 🛠️ Tech Stack
 
-⚙️ How It Works
+| Component | Technology |
+| :--- | :--- |
+| **Frontend** | HTML5, CSS3, JavaScript (ES6+) |
+| **AI Engine** | Google Gemini API |
+| **Data Format** | JSON, Text-based Knowledge Base |
+| **Architecture** | Client-side (Serverless) |
 
-User enters a query
-Chatbot checks instructions and available notes
-Relevant responses are generated using Gemini
-Notes are fetched from notes.txt when applicable
-If data is unavailable, user is informed accordingly
-Conversation context is preserved across API key rotations
 
-🔐 API Key Security Note
+
+## 📂 Project Structure
+
+```bash
+├── index.html          # Main interface
+├── style.css           # Custom styling & animations
+├── clgbot.js           # Core Chatbot logic & Gemini integration
+├── instructions.txt    # Fine-tuning instructions for the AI
+├── notes.txt           # Structured database of digital notes
+├── config.json         # API Configuration (Excluded in production)
+└── assets/             # Images, logos, and icons
+```
+
+## ⚙️ How It Works
+
+* User enters a query in the chatbot interface
+* The chatbot checks predefined instructions and available notes
+* Relevant responses are generated using the Google Gemini API
+* Notes are fetched from notes.txt when applicable
+* If information is unavailable, the user is informed gracefully
+* Conversation context is preserved across API key rotations
+
+## 🔐 API Key Security Note
 
 ⚠️ This project uses frontend-based API integration.
-Do not expose real API keys in public repositories.
-Use placeholder keys or exclude config.json using .gitignore.
 
-🌐 Deployment
+- Do **NOT** expose real API keys in public repositories
+- Use placeholder keys for public sharing
+- Add `config.json` to `.gitignore` to prevent accidental commits
 
-The chatbot is deployed and actively used within RMKCET’s digital platform, improving information accessibility for students and visitors.
+Example `.gitignore` entry:
 
-📈 Future Enhancements
+```gitignore
+config.json
+```
+
+## 🌐 Deployment
+
+The chatbot is deployed and actively used within RMKCET’s digital platform, enhancing information accessibility for students and visitors.
+[RMKCET Website](https://www.rmkcet.ac.in)
+
+## 📈 Future Enhancements
 
 🔐 Backend proxy for secure API handling
+
 🗄️ Database-backed chat memory
+
 🌍 Multilingual support
+
 📊 Admin dashboard for analytics
+
 📱 Mobile-first UI improvements
 
-👨‍💻 Author
+## 👨‍💻 Author
 
-Developed by Barath A S 
-📍 For R.M.K. College of Engineering and Technology (RMKCET)
-
-📄 License
-
-This project is for educational and institutional use.
+Barath A S  
+Developed for R.M.K. College of Engineering and Technology (RMKCET)
