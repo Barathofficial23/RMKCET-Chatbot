@@ -1,3 +1,6 @@
 .vscode/
 api-key.json
 instructions.txt
+LICENSE
+README.md
+node_modules/

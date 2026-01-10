@@ -1,62 +1,11 @@
-import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-
 let openChatBtn, chatContainer, chatMessages, userInput;
-let genAI, model;
 let systemInstruction = "";
-let apiKeys = [];
-let currentKeyIndex = 0;
 let chatHistory = [];
-let totalUsedTokens = 0;
-let apiKeyUsage = {};
 
 // Load instruction file
 async function loadInstructions() {
   const res = await fetch("instructions.txt");
   systemInstruction = await res.text();
-}
-
-// Load API keys from JSON
-async function loadAPIKeys() {
-  const res = await fetch("icons.json");
-  const data = await res.json();
-  apiKeys = data.API_KEYS; 
-
-  // Initialize usage tracking for each key
-  apiKeys.forEach((key, index) => {
-    apiKeyUsage[index] = {
-      count: 0,
-      maskedKey: key.substring(0, 10) + "..." + key.substring(key.length - 4),
-    };
-  });
-
-  // Random starting index
-  currentKeyIndex = Math.floor(Math.random() * apiKeys.length);
-  // console.log(
-  //   `Starting with API key #${currentKeyIndex + 1} (${
-  //     apiKeyUsage[currentKeyIndex].maskedKey
-  //   })`
-  // );
-}
-
-// Initialize model (first time)
-async function initializeModel() {
-  try {
-    await loadAPIKeys();
-    await loadInstructions();
-    await createModel(apiKeys[currentKeyIndex]);
-    console.log("Chatbot initialized successfully");
-  } catch (error) {
-    console.error("Initialization failed:", error);
-  }
-}
-
-// Create model using a specific API key (reused for switching)
-async function createModel(apiKey) {
-  genAI = new GoogleGenerativeAI(apiKey);
-  model = await genAI.getGenerativeModel({
-    model: "gemini-2.5-flash-lite",
-    systemInstruction: systemInstruction,
-  });
 }
 
 //Function to Send Message
@@ -65,83 +14,93 @@ async function sendMessage(customText = null) {
   if (text === "") return;
 
   appendMessage("user", text);
-  // console.log("User sent:", text);
   userInput.value = "";
 
   try {
-    // Log which API key is being used for this request
-    const keyIndexBeforeRequest = currentKeyIndex;
-    apiKeyUsage[keyIndexBeforeRequest].count++;
-    // console.log(
-    //   `\n🔑 Using API Key #${keyIndexBeforeRequest + 1}/${apiKeys.length} (${
-    //     apiKeyUsage[keyIndexBeforeRequest].maskedKey
-    //   })`
-    // );
-    // console.log(
-    //   `📊 Usage count for this key: ${apiKeyUsage[keyIndexBeforeRequest].count}`
-    // );
-
     // Save user input to history
     chatHistory.push({ role: "user", text: text });
 
-    // Prepare conversation with full memory
-    const historyForModel = chatHistory.map((entry) => ({
-      role: entry.role,
-      parts: [{ text: entry.text }],
-    }));
+    // Prepare conversation with full memory for Bytez.js
+    // Format: system message + conversation history
+    const messages = [
+      {
+        role: "system",
+        content:systemInstruction 
+      }
+    ];
 
-    // Get model response using chat session for context
-    const chatSession = await model.startChat({ history: historyForModel });
-    const result = await chatSession.sendMessage(text);
-    const response = result.response.text();
+    // Convert chat history to Bytez.js format
+    chatHistory.forEach((entry) => {
+      if (entry.role === "user") {
+        messages.push({
+          role: "user",
+          content: entry.text,
+        });
+      } else if (entry.role === "model") {
+        messages.push({
+          role: "assistant",
+          content: entry.text,
+        });
+      }
+    });
+
+    // Get model response from backend
+    const responseReq = await fetch('http://localhost:3000/chat', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ messages })
+    });
+
+    const responseData = await responseReq.json();
+
+    if (!responseReq.ok) {
+        throw new Error(responseData.error || `Server error: ${responseReq.status}`);
+    }
+
+    const { output, error } = responseData;
+
+    if (error) {
+      throw new Error(error);
+    }
+
+    // Extract response from output
+    // Bytez.js returns: {error: null, output: {role: 'assistant', content: '...'}, provider: {...}}
+    let response = null;
+
+    if (output) {
+      // Check if output has content field
+      if (output.content && typeof output.content === "string") {
+        response = output.content;
+      } else if (typeof output === "string") {
+        response = output;
+      } else {
+        // If output is an object, try to extract text
+        response = output.text || output.message || String(output);
+      }
+    }
+
+    // Fallback if nothing found
+    if (!response || typeof response !== "string") {
+      console.warn(
+        "Could not extract string response, using fallback:",
+        output
+      );
+      response = "Sorry, I couldn't understand.";
+    }
+
+    // Final safety check - ensure it's a string
+    if (typeof response !== "string") {
+      response = String(response);
+    }
 
     // Store bot response in memory
     chatHistory.push({ role: "model", text: response });
 
-    // Token usage tracking
-    // if (result.response.usageMetadata) {
-    //   const inputTokens = result.response.usageMetadata.promptTokenCount || 0;
-    //   const outputTokens =
-    //     result.response.usageMetadata.candidatesTokenCount || 0;
-    //   const totalTokens =
-    //     result.response.usageMetadata.totalTokenCount ||
-    //     inputTokens + outputTokens;
-    //   totalUsedTokens += totalTokens;
-    //   console.log("📈 Input Tokens:", inputTokens);
-    //   console.log("📈 Output Tokens:", outputTokens);
-    //   console.log("📈 Total Tokens (this request):", totalTokens);
-    //   console.log("📈 Total Tokens (all requests):", totalUsedTokens);
-    // }
-
-    appendMessage("bot", response || "Sorry, I couldn't understand.");
-    // console.log("🤖 Bot's Reply:", response.substring(0, 100) + "...");
-
-    // Log API key usage summary
-    // console.log("\n📋 API Key Usage Summary:");
-    // Object.keys(apiKeyUsage).forEach((index) => {
-    //   // console.log(
-    //   //   `   Key #${parseInt(index) + 1}: ${
-    //   //     apiKeyUsage[index].count
-    //   //   } requests (${apiKeyUsage[index].maskedKey})`
-    //   // );
-    // });
-
-    // Switch to the next API key for next query
-    if (apiKeys.length > 1) {
-      const previousKeyIndex = currentKeyIndex;
-      currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-      await createModel(apiKeys[currentKeyIndex]);
-      // console.log(
-      //   `\n🔄 Switched from Key #${previousKeyIndex + 1} to Key #${
-      //     currentKeyIndex + 1
-      //   } (${apiKeyUsage[currentKeyIndex].maskedKey})`
-      // );
-    }
+    appendMessage("bot", response);
   } catch (error) {
-    console.error(
-      "❌ Error occurred with API Key #" + (currentKeyIndex + 1) + ":",
-      error
-    );
+    console.error("❌ Error occurred:", error);
 
     if (
       error.message.includes("429") ||
@@ -152,23 +111,7 @@ async function sendMessage(customText = null) {
         "bot",
         "Too many requests to RMKCET BOT. Please try again after some time."
       );
-      console.warn(`⚠️ Rate limit reached on API Key`);
-      // For Testing Purposes Only:
-      //  #${currentKeyIndex + 1} (${
-      //   apiKeyUsage[currentKeyIndex].maskedKey
-      // }). Switching to next key...
-
-      // Switch to next API key on rate limit
-      if (apiKeys.length > 1) {
-        const failedKeyIndex = currentKeyIndex;
-        currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-        await createModel(apiKeys[currentKeyIndex]);
-        // console.log(
-        //   `🔄 Switched from Key #${failedKeyIndex + 1} to Key #${
-        //     currentKeyIndex + 1
-        //   } due to rate limit`
-        // );
-      }
+      console.warn("⚠️ Rate limit reached");
     } else {
       appendMessage("bot", "Something went wrong. Please try again later.");
     }
@@ -177,6 +120,12 @@ async function sendMessage(customText = null) {
 
 //Function to Append Message
 function appendMessage(sender, text) {
+  // Ensure text is a string
+  if (typeof text !== "string") {
+    console.warn("appendMessage received non-string:", typeof text, text);
+    text = String(text || "");
+  }
+
   const msg = document.createElement("div");
   msg.className = `message ${sender}`;
 
@@ -231,9 +180,6 @@ function initializeChatbot() {
 
   // Store expanded state on the button element for persistence
   if (isMobile) {
-    // Mobile: Two-step interaction
-    // Step 1: First click expands button to show "How can I help you?"
-    // Step 2: Second click opens the chatbot
     openChatBtn.addEventListener("click", (e) => {
       e.stopPropagation();
 
@@ -242,15 +188,11 @@ function initializeChatbot() {
       if (!isExpanded) {
         // First click: Expand button
         openChatBtn.classList.add("mobile-expanded");
-        // console.log(
-        //   "Button expanded on mobile - showing 'How can I help you?'"
-        // );
       } else {
         // Second click: Open chatbot
         openChatBtn.style.display = "none";
         chatContainer.style.display = "flex";
         openChatBtn.classList.remove("mobile-expanded");
-        // console.log("Chatbot Opened");
       }
     });
 
@@ -269,7 +211,6 @@ function initializeChatbot() {
         chatContainer.style.display !== "flex"
       ) {
         openChatBtn.classList.remove("mobile-expanded");
-        // console.log("Button collapsed on mobile");
       }
 
       // Close chatbot if open and clicked outside
@@ -296,7 +237,6 @@ function initializeChatbot() {
     openChatBtn.addEventListener("click", () => {
       openChatBtn.style.display = "none";
       chatContainer.style.display = "flex";
-      // console.log("Chatbot Opened");
     });
 
     //Click Outside the container to close the Chatbot
@@ -335,7 +275,6 @@ function initializeChatbot() {
 function initialOptions(id) {
   console.log("Button clicked:", id);
   const chatMessages = document.getElementById("chatMessages");
-  //Create the container div with class "defaultOptions"
   const container = document.createElement("div");
   container.className = "defaultOptions";
   container.style.justifyContent = "left";
@@ -441,25 +380,6 @@ function initialOptions(id) {
   chatMessages.appendChild(container);
 }
 
-// Function to display API key usage statistics (can be called from browser console)
-// window.getAPIKeyStats = function () {
-//   console.log("\n📊 === API Key Usage Statistics ===");
-//   console.log(`Total API Keys: ${apiKeys.length}`);
-//   console.log(`Current API Key: #${currentKeyIndex + 1}`);
-//   console.log(`Total Tokens Used: ${totalUsedTokens}`);
-//   console.log("\n📋 Usage by Key:");
-//   Object.keys(apiKeyUsage).forEach((index) => {
-//     const usage = apiKeyUsage[index];
-//     const isCurrent =
-//       parseInt(index) === currentKeyIndex ? " ⭐ (CURRENT)" : "";
-//     console.log(
-//       `   Key #${parseInt(index) + 1}: ${usage.count} requests${isCurrent}`
-//     );
-//     console.log(`      Masked: ${usage.maskedKey}`);
-//   });
-//   console.log("================================\n");
-//   return apiKeyUsage;
-// };
 
 // Initialize when the page loads
 window.addEventListener("DOMContentLoaded", async () => {
@@ -467,7 +387,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   initializeChatbot();
 
   // Initialize AI model
-  await initializeModel();
+  await loadInstructions();
 
   // Set up button event listeners
   document
@@ -485,9 +405,4 @@ window.addEventListener("DOMContentLoaded", async () => {
   document
     .getElementById("placements")
     ?.addEventListener("click", () => initialOptions("placements"));
-
-  console.log("Chatbot Initialized");
-  // console.log(
-  //   "💡 Tip: Type 'getAPIKeyStats()' in the console to see API key usage statistics"
-  // );
 });

@@ -1,0 +1,27 @@
+{
+  "name": "rmkcet-chatbot",
+  "version": "1.0.0",
+  "description": "[![Status](https://img.shields.io/badge/Status-Live-brightgreen.svg)]()\r [![Tech](https://img.shields.io/badge/Tech-JavaScript%20%7C%20Gemini%20AI-blue.svg)]()\r [![Institution](https://img.shields.io/badge/Institution-RMKCET-red.svg)](https://rmkcet.ac.in)",
+  "main": "clgbot.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Barathofficial23/RMKCET-Chatbot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Barathofficial23/RMKCET-Chatbot/issues"
+  },
+  "homepage": "https://github.com/Barathofficial23/RMKCET-Chatbot#readme",
+  "dependencies": {
+    "bytez.js": "^3.0.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
